@@ -28,7 +28,7 @@
     "@nestjs/event-emitter": "^1.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^8.0.0",
-    "aws-sdk": "^2.1053.0",
+    "aws-sdk": "^2.1060.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",

@@ -1,72 +1,99 @@
 import { Injectable } from '@nestjs/common';
-import { ExchangesCollection } from '../exchanges/exchanges.collection';
-import { SUPPORTED_EXCHANGES } from '../exchanges/exchanges.store';
-import { TweetMatcher } from './tweet.matcher';
-import { TweetInfoExtractor } from './tweet.info.extractor';
-import { Tweet } from './tweet.entity';
-import { BaseTestCase } from './base.test.case';
-import { CoinListingEntity } from './coin.listing.entity';
+import { TweetEntity } from './tweet.entity';
 import { TwitterService } from '../twitter/twitter.service';
+import { ListingService } from '../listing/listing.service';
+import { EventsService } from '../events/events.service';
+import { BaseTemplateMatcher } from './matcher/base.template.matcher';
+import { TweetInfoExtractor } from './info.extractor/tweet.info.extractor';
+import { CoinEntitiesCollection } from '../listing/coin.entities.collection';
+import { BaseTestCase } from './matcher/base.test.case';
+import { CoinListingEntity } from '../listing/coin.listing.entity';
+import { TwitterExchangesCollection } from './twitter.exchanges.collection';
+import { twitterExchanges } from './twitter.exchanges';
 
 @Injectable()
 export class TweetService {
-  private tweetMatcher: TweetMatcher;
+  private tweetMatcher: BaseTemplateMatcher;
   private tweetInfoExtractor: TweetInfoExtractor;
-  private exchangesCollection: ExchangesCollection;
+  private twitterExchanges: TwitterExchangesCollection;
+  private databaseNews: CoinEntitiesCollection;
 
-  constructor(private twitterService: TwitterService) {
-    this.tweetMatcher = new TweetMatcher();
+  constructor(
+    private twitterService: TwitterService,
+    private listingService: ListingService,
+    private eventsService: EventsService,
+  ) {
+    this.twitterExchanges = twitterExchanges;
+    this.eventsService = eventsService;
+    this.listingService = listingService;
+    this.tweetMatcher = new BaseTemplateMatcher();
     this.tweetInfoExtractor = new TweetInfoExtractor();
-    this.exchangesCollection = <ExchangesCollection>(
-      ExchangesCollection.fromArray(SUPPORTED_EXCHANGES)
-    );
+    this.databaseNews = new CoinEntitiesCollection([]);
   }
 
   async startExchangesTweetsStream() {
-    try {
-      const tweetStream = await this.twitterService.getTwitterFilterStream(
-        this.exchangesCollection.pluck('twitter_id'),
+    const exchangesTweetStream =
+      await this.twitterService.getTwitterFilterStream(
+        this.twitterExchanges.pluck('id'),
       );
 
-      for await (const tweet of tweetStream) {
-        try {
-          const _tweet = new Tweet(tweet);
-          await this.processTweet(_tweet);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-      await this.startExchangesTweetsStream();
-    }
-  }
+    await this.initDatabaseNews();
 
-  async processTweet(tweet: Tweet) {
-    if (!this.exchangesCollection.hasExchange(tweet.userId)) {
+    if (!exchangesTweetStream) {
+      console.error('Exchanges tweet stream is not defined');
       return;
     }
 
-    const exchange = this.exchangesCollection.getExchangeByUserId(tweet.userId);
+    for await (const tweet of exchangesTweetStream) {
+      try {
+        const _tweet = new TweetEntity(tweet);
+        await this.processTweet(_tweet);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
 
-    console.log(`New post from ${exchange.name}: ${tweet.text}`);
+  async processTweet(tweet: TweetEntity) {
+    if (!this.twitterExchanges.hasExchange(tweet.userId)) {
+      return null;
+    }
 
-    const passedTestCase: BaseTestCase = this.tweetMatcher.findTestCaseMatch(
-      tweet,
+    const exchange = this.twitterExchanges.getExchangeByUserId(tweet.userId);
+    const testCase: BaseTestCase = this.tweetMatcher.findTestCaseMatch(
       exchange,
+      tweet.text,
     );
 
-    if (!passedTestCase) {
+    if (!testCase) {
+      console.log(`No matches for the ${exchange.type} tweet: ${tweet.text}`);
       return null;
     }
 
     const coinListingEntity: CoinListingEntity =
-      this.tweetInfoExtractor.extractInfoFromTweet(
-        tweet,
-        exchange,
-        passedTestCase,
-      );
+      this.tweetInfoExtractor.extractInfoFromTweet(tweet, exchange, testCase);
 
-    console.log(coinListingEntity);
+    if (!this.databaseNews.hasNewListings(coinListingEntity)) {
+      console.log(`Test case was matched but the listing was already added`);
+      return null;
+    }
+
+    const collection: CoinEntitiesCollection = new CoinEntitiesCollection([
+      coinListingEntity,
+    ]);
+
+    await Promise.allSettled([
+      this.eventsService.putImportantNewsEvent(collection),
+      this.listingService.addImportantNews(collection),
+      this.initDatabaseNews(),
+    ]);
+
+    console.log(
+      `New coin listing was found: ${JSON.stringify(collection.getItems())}`,
+    );
+  }
+
+  async initDatabaseNews() {
+    this.databaseNews = await this.listingService.getAllCoinListings();
   }
 }

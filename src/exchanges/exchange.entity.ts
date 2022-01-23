@@ -1,17 +1,38 @@
+import { SourceEnum } from './source.enum';
+import { BaseMatchTemplate } from '../tweets/match.templates/base.match.template';
+import { ExchangesEnum } from './exchanges.enum';
+
 export class Exchange {
-  private readonly _name: string;
-  private readonly _twitterId: string;
+  private readonly _id: string;
+  private readonly _type: ExchangesEnum;
+  private readonly _source: SourceEnum;
+  private readonly _matchTemplate: BaseMatchTemplate;
 
-  constructor(name: string, twitterId: string) {
-    this._name = name;
-    this._twitterId = twitterId;
+  constructor(
+    id: string,
+    type: ExchangesEnum,
+    source: SourceEnum,
+    matchTemplate: BaseMatchTemplate,
+  ) {
+    this._id = id;
+    this._type = type;
+    this._source = source;
+    this._matchTemplate = matchTemplate;
   }
 
-  get name(): string {
-    return this._name;
+  get id(): string {
+    return this._id;
   }
 
-  get twitterId(): string {
-    return this._twitterId;
+  get source(): string {
+    return this._source;
+  }
+
+  get type(): string {
+    return this._type;
+  }
+
+  get matchTemplate(): BaseMatchTemplate {
+    return this._matchTemplate;
   }
 }

@@ -1,4 +1,4 @@
-export class Tweet {
+export class TweetEntity {
   private readonly tweet: any;
 
   constructor(tweet: any) {

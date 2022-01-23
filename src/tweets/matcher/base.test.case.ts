@@ -1,10 +1,5 @@
-import { isStringContainsMoreExpectedWords } from '../utils/helpers';
-
-export interface ITestCase {
-  test(item: unknown): boolean;
-  get matchedRegex();
-  get type();
-}
+import { ITestCase } from './itest.case';
+import { isStringContainsMoreExpectedWords } from '../../utils/helpers';
 
 export class BaseTestCase implements ITestCase {
   private readonly _type;

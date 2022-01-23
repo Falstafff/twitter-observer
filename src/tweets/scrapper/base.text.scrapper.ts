@@ -1,6 +1,4 @@
-export interface IScrapper {
-  scrap(str: unknown);
-}
+import { IScrapper } from './iscrapper';
 
 export class BaseTextScrapper implements IScrapper {
   private readonly _matchRegex;

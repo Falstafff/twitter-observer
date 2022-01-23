@@ -1,6 +1,6 @@
 import { BaseMatchTemplate } from './base.match.template';
-import { BaseTestCase } from '../base.test.case';
-import { AnnouncementTypes, REGEX } from '../constants';
+import { BaseTestCase } from '../matcher/base.test.case';
+import { AnnouncementTypes, REGEX } from '../../constants';
 
 export class MeMatchTemplate extends BaseMatchTemplate {
   constructor() {
@@ -9,7 +9,7 @@ export class MeMatchTemplate extends BaseMatchTemplate {
       new BaseTestCase(
         AnnouncementTypes.listing,
         [REGEX.$_SYMBOL],
-        ['new', 'list', 'kraken'],
+        ['new', 'list'],
         1,
       ),
     ];

@@ -1,6 +1,6 @@
 import { BaseMatchTemplate } from './base.match.template';
-import { BaseTestCase } from '../base.test.case';
-import { AnnouncementTypes, REGEX } from '../constants';
+import { BaseTestCase } from '../matcher/base.test.case';
+import { AnnouncementTypes, REGEX } from '../../constants';
 
 export class CoinoneMatchTemplate extends BaseMatchTemplate {
   constructor() {

@@ -1,14 +1,13 @@
-import { BaseTestCase } from '../base.test.case';
-import { Tweet } from '../tweet.entity';
+import { BaseTestCase } from '../matcher/base.test.case';
 
 export class BaseMatchTemplate {
   protected matchTemplates: BaseTestCase[];
 
-  findTemplateMatch(tweet: Tweet): BaseTestCase {
+  findTemplateMatch(text: string): BaseTestCase {
     let passedTestCase: BaseTestCase;
 
     this.matchTemplates.some((filter, index) => {
-      const isPassed = filter.test(tweet.text);
+      const isPassed = filter.test(text);
       if (isPassed) passedTestCase = this.matchTemplates[index];
       return isPassed;
     });

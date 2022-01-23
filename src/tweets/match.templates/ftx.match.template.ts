@@ -1,6 +1,6 @@
-import { AnnouncementTypes, REGEX } from '../constants';
 import { BaseMatchTemplate } from './base.match.template';
-import { BaseTestCase } from '../base.test.case';
+import { BaseTestCase } from '../matcher/base.test.case';
+import { AnnouncementTypes, REGEX } from '../../constants';
 
 export class FtxMatchTemplate extends BaseMatchTemplate {
   constructor() {

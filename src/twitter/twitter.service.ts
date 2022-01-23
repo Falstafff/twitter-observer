@@ -19,6 +19,7 @@ export class TwitterService {
 
   async getTwitterFilterStream(
     followIds: string[],
+    autoReconnect: boolean = true,
   ): Promise<TweetStream<TweetV1>> {
     let stream;
 
@@ -26,6 +27,9 @@ export class TwitterService {
       stream = await this.twitterApi.v1.filterStream({
         follow: followIds,
       });
+
+      stream.autoReconnect = autoReconnect;
+      stream.autoReconnectRetries = Infinity;
     } catch (e) {
       console.error(e);
     }
