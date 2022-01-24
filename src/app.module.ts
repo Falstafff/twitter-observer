@@ -14,10 +14,7 @@ import { ListingModule } from './listing/listing.module';
     ConfigModule.forRoot({
       validationSchema: Joi.object({
         AWS_DEFAULT_REGION: Joi.string().required(),
-        TWITTER_APP_KEY: Joi.string().required(),
-        TWITTER_APP_SECRET: Joi.string().required(),
-        TWITTER_ACCESS_TOKEN: Joi.string().required(),
-        TWITTER_ACCESS_SECRET: Joi.string().required(),
+        TWITTER_BEARER_TOKEN: Joi.string().required(),
       }),
     }),
     TwitterModule,

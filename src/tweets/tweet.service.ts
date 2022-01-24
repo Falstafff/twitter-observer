@@ -97,8 +97,6 @@ export class TweetService {
       this.listingService.addImportantNews(collection),
     ]);
 
-    Logger.log(
-      `New coin listing was found: ${JSON.stringify(collection.getItems())}`,
-    );
+    Logger.log(`New coin listing: ${JSON.stringify(collection.getItems())}`);
   }
 }

@@ -8,9 +8,8 @@ export class TwitterService {
   private twitterApi: TwitterApi;
 
   constructor(private configService: ConfigService) {
-    this.twitterApi = new TwitterApi(
-      'AAAAAAAAAAAAAAAAAAAAAAZ3XwEAAAAAGY6o%2F4gGf0k2HJWl5wGk4jycEhw%3DBVfVQY5H8dyfqnmqbAuxXOjJ9UbRotN4EfWgfk57iP5lwyjv8N',
-    );
+    const bearerToken = configService.get('TWITTER_BEARER_TOKEN');
+    this.twitterApi = new TwitterApi(bearerToken);
   }
 
   async getTwitterSearchStream() {
