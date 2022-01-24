@@ -1,39 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { TwitterApi } from 'twitter-api-v2';
 import { ConfigService } from '@nestjs/config';
-import { TweetV1 } from 'twitter-api-v2/dist/types';
-import TweetStream from 'twitter-api-v2/dist/stream/TweetStream';
+import { TwitterStreamRuleCollection } from './twitter.stream.rule.collection';
 
 @Injectable()
 export class TwitterService {
   private twitterApi: TwitterApi;
 
   constructor(private configService: ConfigService) {
-    this.twitterApi = new TwitterApi({
-      appKey: configService.get('TWITTER_APP_KEY'),
-      appSecret: configService.get('TWITTER_APP_SECRET'),
-      accessToken: configService.get('TWITTER_ACCESS_TOKEN'),
-      accessSecret: configService.get('TWITTER_ACCESS_SECRET'),
+    this.twitterApi = new TwitterApi(
+      'AAAAAAAAAAAAAAAAAAAAAAZ3XwEAAAAAGY6o%2F4gGf0k2HJWl5wGk4jycEhw%3DBVfVQY5H8dyfqnmqbAuxXOjJ9UbRotN4EfWgfk57iP5lwyjv8N',
+    );
+  }
+
+  async getTwitterSearchStream() {
+    return this.twitterApi.v2.searchStream();
+  }
+
+  async addStreamRules(rules) {
+    return this.twitterApi.v2.updateStreamRules({
+      add: rules,
     });
   }
 
-  async getTwitterFilterStream(
-    followIds: string[],
-    autoReconnect: boolean = true,
-  ): Promise<TweetStream<TweetV1>> {
-    let stream;
+  async getStreamRules() {
+    let rulesCollection = new TwitterStreamRuleCollection([]);
 
     try {
-      stream = await this.twitterApi.v1.filterStream({
-        follow: followIds,
-      });
-
-      stream.autoReconnect = autoReconnect;
-      stream.autoReconnectRetries = Infinity;
+      const { data } = await this.twitterApi.v2.streamRules();
+      rulesCollection = TwitterStreamRuleCollection.fromArray(data ?? []);
     } catch (e) {
-      console.error(e);
+      Logger.error(e);
     }
 
-    return stream;
+    return rulesCollection;
+  }
+
+  async deleteStreamRules(ids) {
+    return this.twitterApi.v2.updateStreamRules({
+      delete: {
+        ids,
+      },
+    });
   }
 }

@@ -1,25 +1,22 @@
-export class TweetEntity {
-  private readonly tweet: any;
+import { TweetV2SingleStreamResult } from 'twitter-api-v2/dist/types/v2/tweet.v2.types';
+import { ExchangesEnum } from '../exchanges/exchanges.enum';
 
-  constructor(tweet: any) {
+export class TweetEntity {
+  private readonly tweet: TweetV2SingleStreamResult;
+
+  constructor(tweet: TweetV2SingleStreamResult) {
     this.tweet = tweet;
   }
 
-  isExtendedTweet(tweet) {
-    return !!tweet?.extended_tweet;
+  get id() {
+    return this.tweet.data.id;
   }
 
   get text() {
-    return this.isExtendedTweet(this.tweet)
-      ? this.tweet.extended_tweet.full_text
-      : this.tweet.text;
+    return this.tweet.data.text;
   }
 
-  get href() {
-    return '';
-  }
-
-  get userId() {
-    return this?.tweet?.user?.id;
+  get tag(): ExchangesEnum {
+    return <ExchangesEnum>this.tweet.matching_rules[0].tag;
   }
 }

@@ -1,5 +1,6 @@
 import { Exchange } from '../../exchanges/exchange.entity';
 import { BaseTestCase } from './base.test.case';
+import { Logger } from '@nestjs/common';
 
 export class BaseTemplateMatcher {
   findTestCaseMatch(exchange: Exchange, text: string) {
@@ -7,8 +8,8 @@ export class BaseTemplateMatcher {
       exchange.matchTemplate.findTemplateMatch(text);
 
     if (!passedTestCase) {
-      console.log(
-        `${exchange.type}: no template matches for the next post: \n \n ${text}`,
+      Logger.log(
+        `${exchange.type}: no template matches for the next post: ${text}`,
       );
       return null;
     }

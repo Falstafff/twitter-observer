@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { TweetService } from './tweets/tweet.service';
 
 @Injectable()
@@ -6,6 +6,13 @@ export class AppService implements OnModuleInit {
   constructor(private tweetService: TweetService) {}
 
   async onModuleInit() {
-    await this.tweetService.startExchangesTweetsStream();
+    Logger.log('Starting twitter observer listener...');
+
+    try {
+      await this.tweetService.startExchangesTweetsStream();
+    } catch (e) {
+      Logger.error(e);
+      process.exit(0);
+    }
   }
 }

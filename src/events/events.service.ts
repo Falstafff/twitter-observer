@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CoinEntitiesCollection } from '../listing/coin.entities.collection';
 import { EventBridge } from 'aws-sdk';
 import { PutEventsRequest } from 'aws-sdk/clients/eventbridge';
@@ -32,7 +32,7 @@ export class EventsService {
         await this.eventBridge.putEvents(params).promise(),
       );
     } catch (e) {
-      console.error(e);
+      Logger.error(e);
     }
   }
 
@@ -41,7 +41,7 @@ export class EventsService {
 
     if (FailedEntryCount > 0) {
       const { ErrorCode, ErrorMessage } = Entries[0];
-      console.error(`${source}: ${ErrorCode}_${ErrorMessage}`);
+      Logger.error(`${source}: ${ErrorCode}_${ErrorMessage}`);
     }
   }
 }

@@ -1,19 +1,27 @@
 import { Exchange } from '../exchanges/exchange.entity';
 import { BaseCollection } from '../utils/collection';
+import { ExchangesEnum } from '../exchanges/exchanges.enum';
 
 export class TwitterExchangesCollection extends BaseCollection {
-  private readonly exchangesByTwitterId;
+  private readonly exchangesByType: Record<ExchangesEnum, Exchange>;
 
   constructor(items: Exchange[]) {
     super(items);
-    this.exchangesByTwitterId = this.organizedBy('id');
+    this.exchangesByType = this.organizedBy('type');
   }
 
-  getExchangeByUserId(id): Exchange {
-    return this.exchangesByTwitterId[id][0];
+  getExchangeUsingExchangeEnum(type: ExchangesEnum): Exchange {
+    return this.exchangesByType[type][0];
   }
 
-  hasExchange(id: number): boolean {
-    return id in this.exchangesByTwitterId;
+  isExchange(id: string): boolean {
+    return id in this.exchangesByType;
+  }
+
+  mapToTwitterStreamRules() {
+    return this.items.map(({ id, type }: Exchange) => ({
+      value: `from:${id}`,
+      tag: type,
+    }));
   }
 }

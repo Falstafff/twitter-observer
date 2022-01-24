@@ -1,4 +1,5 @@
 export enum ExchangesEnum {
+  binance = 'binance',
   coinbase = 'coinbase',
   coinone = 'coinone',
   kraken = 'kraken',

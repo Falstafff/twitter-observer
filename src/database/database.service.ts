@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DynamoDB } from 'aws-sdk';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { ConfigService } from '@nestjs/config';
@@ -19,7 +19,7 @@ export class DatabaseService {
         .batchWrite(DatabaseService.mapBatchWrite(table, items))
         .promise();
     } catch (e) {
-      console.error(e);
+      Logger.error(e);
       return false;
     }
 
@@ -38,7 +38,7 @@ export class DatabaseService {
 
       items = response.Items;
     } catch (e) {
-      console.error(e);
+      Logger.error(e);
     }
 
     return items;

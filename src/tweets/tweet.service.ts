@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { TweetEntity } from './tweet.entity';
 import { TwitterService } from '../twitter/twitter.service';
 import { ListingService } from '../listing/listing.service';
@@ -16,7 +16,6 @@ export class TweetService {
   private tweetMatcher: BaseTemplateMatcher;
   private tweetInfoExtractor: TweetInfoExtractor;
   private twitterExchanges: TwitterExchangesCollection;
-  private databaseNews: CoinEntitiesCollection;
 
   constructor(
     private twitterService: TwitterService,
@@ -28,53 +27,64 @@ export class TweetService {
     this.listingService = listingService;
     this.tweetMatcher = new BaseTemplateMatcher();
     this.tweetInfoExtractor = new TweetInfoExtractor();
-    this.databaseNews = new CoinEntitiesCollection([]);
   }
 
   async startExchangesTweetsStream() {
-    const exchangesTweetStream =
-      await this.twitterService.getTwitterFilterStream(
-        this.twitterExchanges.pluck('id'),
-      );
+    // await this.twitterService.addStreamRules(
+    //   this.twitterExchanges.mapToTwitterStreamRules(),
+    // );
 
-    await this.initDatabaseNews();
+    const exchangesTweetStream =
+      await this.twitterService.getTwitterSearchStream();
 
     if (!exchangesTweetStream) {
-      console.error('Exchanges tweet stream is not defined');
-      return;
+      Logger.error('Exchanges tweet stream is not defined');
+      return null;
     }
 
     for await (const tweet of exchangesTweetStream) {
       try {
-        const _tweet = new TweetEntity(tweet);
-        await this.processTweet(_tweet);
+        const tweetEntity = new TweetEntity(tweet);
+        await this.processTweet(tweetEntity);
       } catch (e) {
-        console.error(e);
+        Logger.error(e);
       }
     }
   }
 
-  async processTweet(tweet: TweetEntity) {
-    if (!this.twitterExchanges.hasExchange(tweet.userId)) {
+  async processTweet(tweetEntity: TweetEntity) {
+    Logger.log(JSON.stringify(tweetEntity));
+
+    const exchange = this.twitterExchanges.getExchangeUsingExchangeEnum(
+      tweetEntity.tag,
+    );
+
+    if (!exchange) {
+      Logger.error(`Exchange is not defined`);
       return null;
     }
 
-    const exchange = this.twitterExchanges.getExchangeByUserId(tweet.userId);
     const testCase: BaseTestCase = this.tweetMatcher.findTestCaseMatch(
       exchange,
-      tweet.text,
+      tweetEntity.text,
     );
 
     if (!testCase) {
-      console.log(`No matches for the ${exchange.type} tweet: ${tweet.text}`);
+      Logger.log(`No matches for the ${exchange.type} tweet`);
       return null;
     }
 
     const coinListingEntity: CoinListingEntity =
-      this.tweetInfoExtractor.extractInfoFromTweet(tweet, exchange, testCase);
+      this.tweetInfoExtractor.extractInfoFromTweet(
+        tweetEntity,
+        exchange,
+        testCase,
+      );
 
-    if (!this.databaseNews.hasNewListings(coinListingEntity)) {
-      console.log(`Test case was matched but the listing was already added`);
+    const databaseNews = await this.listingService.getAllCoinListings();
+
+    if (!databaseNews.hasNewListings(coinListingEntity)) {
+      Logger.log(`Test case was matched but the listing was already added`);
       return null;
     }
 
@@ -85,15 +95,10 @@ export class TweetService {
     await Promise.allSettled([
       this.eventsService.putImportantNewsEvent(collection),
       this.listingService.addImportantNews(collection),
-      this.initDatabaseNews(),
     ]);
 
-    console.log(
+    Logger.log(
       `New coin listing was found: ${JSON.stringify(collection.getItems())}`,
     );
-  }
-
-  async initDatabaseNews() {
-    this.databaseNews = await this.listingService.getAllCoinListings();
   }
 }
