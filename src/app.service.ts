@@ -11,7 +11,7 @@ export class AppService implements OnModuleInit {
     try {
       await this.tweetService.startExchangesTweetsStream();
     } catch (e) {
-      Logger.error(e);
+      Logger.error(`Error during tweets stream: ${e.message}`);
       process.exit(0);
     }
   }

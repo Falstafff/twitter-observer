@@ -30,10 +30,6 @@ export class TweetService {
   }
 
   async startExchangesTweetsStream() {
-    // await this.twitterService.addStreamRules(
-    //   this.twitterExchanges.mapToTwitterStreamRules(),
-    // );
-
     const exchangesTweetStream =
       await this.twitterService.getTwitterSearchStream();
 

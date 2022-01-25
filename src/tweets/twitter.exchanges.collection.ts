@@ -11,7 +11,8 @@ export class TwitterExchangesCollection extends BaseCollection {
   }
 
   getExchangeUsingExchangeEnum(type: ExchangesEnum): Exchange {
-    return this.exchangesByType[type][0];
+    const exchangeByType = this.exchangesByType[type];
+    return Array.isArray(exchangeByType) ? exchangeByType[0] : null;
   }
 
   isExchange(id: string): boolean {
