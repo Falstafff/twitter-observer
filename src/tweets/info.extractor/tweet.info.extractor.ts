@@ -1,26 +1,27 @@
 import { Exchange } from '../../exchanges/exchange.entity';
 import { BaseTestCase } from '../matcher/base.test.case';
-import { CoinListingEntity } from '../../listing/coin.listing.entity';
 import { BaseTextScrapper } from '../scrapper/base.text.scrapper';
 import { SourceEnum } from '../../exchanges/source.enum';
 import { TweetEntity } from '../tweet.entity';
+import { Announcement } from '../../announcement/entities/announcement.entity';
 
 export class TweetInfoExtractor {
   extractInfoFromTweet(
     tweet: TweetEntity,
     exchange: Exchange,
     passedTestCase: BaseTestCase,
-  ): CoinListingEntity {
+  ): Announcement {
     const textScrapper = new BaseTextScrapper(passedTestCase.matchedRegex);
+    const announcement = new Announcement();
 
-    return new CoinListingEntity({
-      id: undefined,
-      title: tweet.text,
-      coinSymbol: textScrapper.scrap(tweet.text),
-      href: '',
-      platform: exchange.type,
-      type: passedTestCase.type,
-      source: SourceEnum.twitter,
-    });
+    announcement.title = tweet.text;
+    announcement.coinSymbol = textScrapper.scrap(tweet.text);
+    announcement.link = '';
+    announcement.platform = exchange.type;
+    announcement.type = passedTestCase.type;
+    announcement.source = SourceEnum.twitter;
+    announcement.detectionDate = new Date().toISOString();
+
+    return announcement;
   }
 }

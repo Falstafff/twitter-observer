@@ -12,12 +12,18 @@ export class CoinbaseMatchTemplate extends BaseMatchTemplate {
         ['now', 'available', 'coinbase'],
         1,
       ),
-        new BaseTestCase(
-            AnnouncementTypes.listing,
-            [REGEX.COIN_SYMBOL],
-            ['coinbase', 'will', 'add', 'support'],
-            .75
-        )
+      new BaseTestCase(
+        AnnouncementTypes.listing,
+        [REGEX.COIN_SYMBOL],
+        ['coinbase', 'will', 'add', 'support'],
+        0.75,
+      ),
+      new BaseTestCase(
+        AnnouncementTypes.listing,
+        [REGEX.$_SYMBOL],
+        ['coinbase', 'custody', 'now', 'supports', 'deposits'],
+        1,
+      ),
     ];
   }
 }

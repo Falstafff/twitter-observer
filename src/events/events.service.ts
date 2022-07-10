@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CoinEntitiesCollection } from '../listing/coin.entities.collection';
+import { AnnouncementCollection } from '../announcement/announcement.collection';
 import { EventBridge } from 'aws-sdk';
 import { PutEventsRequest } from 'aws-sdk/clients/eventbridge';
 import { ConfigService } from '@nestjs/config';
@@ -14,7 +14,7 @@ export class EventsService {
     });
   }
 
-  async putImportantNewsEvent(collection: CoinEntitiesCollection) {
+  async putImportantNewsEvent(collection: AnnouncementCollection) {
     const source = 'notify.importantNews';
     const params: PutEventsRequest = {
       Entries: [

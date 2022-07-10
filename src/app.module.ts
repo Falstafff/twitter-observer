@@ -6,7 +6,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TwitterModule } from './twitter/twitter.module';
 import { TweetModule } from './tweets/tweet.module';
 import { EventsModule } from './events/events.module';
-import { ListingModule } from './listing/listing.module';
+import { AnnouncementModule } from './announcement/announcement.module';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -15,12 +16,19 @@ import { ListingModule } from './listing/listing.module';
       validationSchema: Joi.object({
         AWS_DEFAULT_REGION: Joi.string().required(),
         TWITTER_BEARER_TOKEN: Joi.string().required(),
+        DB_HOST: Joi.string().required(),
+        DB_PORT: Joi.number().required(),
+        DB_USER: Joi.string().required(),
+        DB_PASSWORD: Joi.string().required(),
+        DB_NAME: Joi.string().required(),
+        PORT: Joi.number(),
       }),
     }),
+    DatabaseModule,
     TwitterModule,
     TweetModule,
     EventsModule,
-    ListingModule,
+    AnnouncementModule,
   ],
   controllers: [],
   providers: [AppService],

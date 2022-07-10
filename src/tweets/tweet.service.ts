@@ -1,15 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TweetEntity } from './tweet.entity';
 import { TwitterService } from '../twitter/twitter.service';
-import { ListingService } from '../listing/listing.service';
 import { EventsService } from '../events/events.service';
 import { BaseTemplateMatcher } from './matcher/base.template.matcher';
 import { TweetInfoExtractor } from './info.extractor/tweet.info.extractor';
-import { CoinEntitiesCollection } from '../listing/coin.entities.collection';
+import { AnnouncementCollection } from '../announcement/announcement.collection';
 import { BaseTestCase } from './matcher/base.test.case';
-import { CoinListingEntity } from '../listing/coin.listing.entity';
 import { TwitterExchangesCollection } from './twitter.exchanges.collection';
+import { AnnouncementService } from '../announcement/announcement.service';
 import { twitterExchanges } from './twitter.exchanges';
+import { Announcement } from '../announcement/entities/announcement.entity';
 
 @Injectable()
 export class TweetService {
@@ -19,12 +19,11 @@ export class TweetService {
 
   constructor(
     private twitterService: TwitterService,
-    private listingService: ListingService,
+    private announcementsService: AnnouncementService,
     private eventsService: EventsService,
   ) {
     this.twitterExchanges = twitterExchanges;
     this.eventsService = eventsService;
-    this.listingService = listingService;
     this.tweetMatcher = new BaseTemplateMatcher();
     this.tweetInfoExtractor = new TweetInfoExtractor();
   }
@@ -46,6 +45,11 @@ export class TweetService {
         Logger.error(e);
       }
     }
+
+    // this.processTweet({
+    //   tag: 'coinbase' as ExchangesEnum,
+    //   text: 'Coinbase will add support for Boba Network (BOBA) and Gemini USD (GUSD) (TESTER) on the Ethereum network (ERC-20 token). Do not send this asset over other networks or your funds may be lost.',
+    // } as TweetEntity);
   }
 
   async processTweet(tweetEntity: TweetEntity) {
@@ -70,27 +74,25 @@ export class TweetService {
       return null;
     }
 
-    const coinListingEntity: CoinListingEntity =
+    const announcement: Announcement =
       this.tweetInfoExtractor.extractInfoFromTweet(
         tweetEntity,
         exchange,
         testCase,
       );
 
-    const databaseNews = await this.listingService.getAllCoinListings();
-
-    if (!databaseNews.hasNewListings(coinListingEntity)) {
+    if (!(await this.announcementsService.isNewAnnouncement(announcement))) {
       Logger.log(`Test case was matched but the listing was already added`);
       return null;
     }
 
-    const collection: CoinEntitiesCollection = new CoinEntitiesCollection([
-      coinListingEntity,
+    const collection: AnnouncementCollection = new AnnouncementCollection([
+      announcement,
     ]);
 
     await Promise.allSettled([
       this.eventsService.putImportantNewsEvent(collection),
-      this.listingService.addImportantNews(collection),
+      this.announcementsService.bulkCreate(collection),
     ]);
 
     Logger.log(`New coin listing: ${JSON.stringify(collection.getItems())}`);
