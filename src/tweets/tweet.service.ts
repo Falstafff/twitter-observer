@@ -38,14 +38,13 @@ export class TweetService {
     }
 
     for await (const tweet of exchangesTweetStream) {
+      Logger.log(JSON.stringify(tweet));
       try {
-        const tweetEntity = new TweetEntity(tweet);
-        await this.processTweet(tweetEntity);
+        await this.processTweet(new TweetEntity(tweet));
       } catch (e) {
         Logger.error(e);
       }
     }
-
     // this.processTweet({
     //   tag: 'coinbase' as ExchangesEnum,
     //   text: 'Coinbase will add support for Boba Network (BOBA) and Gemini USD (GUSD) (TESTER) on the Ethereum network (ERC-20 token). Do not send this asset over other networks or your funds may be lost.',
@@ -53,8 +52,6 @@ export class TweetService {
   }
 
   async processTweet(tweetEntity: TweetEntity) {
-    Logger.log(JSON.stringify(tweetEntity));
-
     const exchange = this.twitterExchanges.getExchangeUsingExchangeEnum(
       tweetEntity.tag,
     );

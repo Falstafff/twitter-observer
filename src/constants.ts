@@ -5,5 +5,5 @@ export const REGEX = {
 
 export enum AnnouncementTypes {
   listing = 'coin-listing',
-  supports = 'supports'
+  supports = 'supports',
 }
