@@ -3,6 +3,7 @@ import { AnnouncementCollection } from '../announcement/announcement.collection'
 import { EventBridge } from 'aws-sdk';
 import { PutEventsRequest } from 'aws-sdk/clients/eventbridge';
 import { ConfigService } from '@nestjs/config';
+import { Announcement } from '../announcement/announcement.entity';
 
 @Injectable()
 export class EventsService {
@@ -14,13 +15,13 @@ export class EventsService {
     });
   }
 
-  async putImportantNewsEvent(collection: AnnouncementCollection) {
+  async putImportantNewsEvent(announcements: Announcement[]) {
     const source = 'notify.importantNews';
     const params: PutEventsRequest = {
       Entries: [
         {
           Source: source,
-          Detail: JSON.stringify({ news: collection.getItems() }),
+          Detail: JSON.stringify({ news: announcements }),
           DetailType: 'FoundImportantNews',
         },
       ],

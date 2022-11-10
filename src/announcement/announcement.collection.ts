@@ -1,6 +1,6 @@
 import { compareTwoStrings } from 'string-similarity';
 import { BaseCollection } from '../utils/collection';
-import { Announcement } from './entities/announcement.entity';
+import { Announcement } from './announcement.entity';
 
 export class AnnouncementCollection extends BaseCollection {
   protected readonly items: Announcement[];

@@ -9,7 +9,9 @@ import { BaseTestCase } from './matcher/base.test.case';
 import { TwitterExchangesCollection } from './twitter.exchanges.collection';
 import { AnnouncementService } from '../announcement/announcement.service';
 import { twitterExchanges } from './twitter.exchanges';
-import { Announcement } from '../announcement/entities/announcement.entity';
+import { Announcement } from '../announcement/announcement.entity';
+import { Exchange } from '../exchanges/exchange.entity';
+import { ExchangesEnum } from '../exchanges/exchanges.enum';
 
 @Injectable()
 export class TweetService {
@@ -28,7 +30,7 @@ export class TweetService {
     this.tweetInfoExtractor = new TweetInfoExtractor();
   }
 
-  async startExchangesTweetsStream() {
+  public async startExchangesTweetsStream() {
     const exchangesTweetStream =
       await this.twitterService.getTwitterSearchStream();
 
@@ -36,7 +38,6 @@ export class TweetService {
       Logger.error('Exchanges tweet stream is not defined');
       return null;
     }
-
     for await (const tweet of exchangesTweetStream) {
       Logger.log(JSON.stringify(tweet));
       try {
@@ -47,14 +48,13 @@ export class TweetService {
     }
     // this.processTweet({
     //   tag: 'coinbase' as ExchangesEnum,
-    //   text: 'Coinbase will add support for Boba Network (BOBA) and Gemini USD (GUSD) (TESTER) on the Ethereum network (ERC-20 token). Do not send this asset over other networks or your funds may be lost.',
+    //   text: 'Asset added to the roadmap today: Vulcan Forged PYR (PYR)',
     // } as TweetEntity);
   }
 
-  async processTweet(tweetEntity: TweetEntity) {
-    const exchange = this.twitterExchanges.getExchangeUsingExchangeEnum(
-      tweetEntity.tag,
-    );
+  public async processTweet(tweetEntity: TweetEntity) {
+    const exchange: Exchange =
+      this.twitterExchanges.getExchangeUsingExchangeEnum(tweetEntity.tag);
 
     if (!exchange) {
       Logger.error(`Exchange is not defined`);
@@ -83,15 +83,11 @@ export class TweetService {
       return null;
     }
 
-    const collection: AnnouncementCollection = new AnnouncementCollection([
-      announcement,
-    ]);
-
     await Promise.allSettled([
-      this.eventsService.putImportantNewsEvent(collection),
-      this.announcementsService.bulkCreate(collection),
+      this.eventsService.putImportantNewsEvent([announcement]),
+      this.announcementsService.create([announcement]),
     ]);
 
-    Logger.log(`New coin listing: ${JSON.stringify(collection.getItems())}`);
+    Logger.log(`New coin listing: ${JSON.stringify([announcement])}`);
   }
 }

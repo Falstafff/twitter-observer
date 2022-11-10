@@ -3,7 +3,7 @@ import { BaseTestCase } from '../matcher/base.test.case';
 import { BaseTextScrapper } from '../scrapper/base.text.scrapper';
 import { SourceEnum } from '../../exchanges/source.enum';
 import { TweetEntity } from '../tweet.entity';
-import { Announcement } from '../../announcement/entities/announcement.entity';
+import { Announcement } from '../../announcement/announcement.entity';
 
 export class TweetInfoExtractor {
   extractInfoFromTweet(
@@ -16,11 +16,11 @@ export class TweetInfoExtractor {
 
     announcement.title = tweet.text;
     announcement.coinSymbol = textScrapper.scrap(tweet.text);
-    announcement.link = '';
+    announcement.href = '';
     announcement.platform = exchange.type;
     announcement.type = passedTestCase.type;
     announcement.source = SourceEnum.twitter;
-    announcement.detectionDate = new Date().toISOString();
+    announcement.createdAt = new Date().toISOString();
 
     return announcement;
   }

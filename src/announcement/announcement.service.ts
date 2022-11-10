@@ -1,32 +1,43 @@
-import { Injectable } from '@nestjs/common';
-import { Announcement } from './entities/announcement.entity';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { Announcement } from './announcement.entity';
 import { AnnouncementCollection } from './announcement.collection';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Cache } from 'cache-manager';
+import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class AnnouncementService {
   constructor(
-    @InjectRepository(Announcement)
-    private announcementRepository: Repository<Announcement>,
+    @Inject(CACHE_MANAGER)
+    private readonly cache: Cache,
+    private readonly database: DatabaseService,
   ) {}
 
-  bulkCreate(collection: AnnouncementCollection) {
-    const announcements = this.announcementRepository.create(
-      collection.getItems(),
+  public async create(announcements: Announcement[]): Promise<boolean> {
+    const isCreated: boolean = await this.database.putItems(
+      'AnnouncementsTable-prod',
+      announcements,
     );
 
-    return this.announcementRepository.save(announcements);
+    if (isCreated) {
+      await this.cache.set('announcements', [
+        ...announcements,
+        (await this.cache.get('announcements')) ?? [],
+      ]);
+    }
+
+    return isCreated;
   }
 
-  async isNewAnnouncement(announcement: Announcement): Promise<boolean> {
-    const announcements = new AnnouncementCollection(
-      await this.announcementRepository.findBy({
-        platform: announcement.platform,
-        type: announcement.type,
-      }),
-    );
+  public async isNewAnnouncement(announcement: Announcement): Promise<boolean> {
+    let announcements: Announcement[] = await this.cache.get('announcements');
 
-    return announcements.hasNewAnnouncements(announcement);
+    if (!announcements) {
+      announcements = await this.database.scanItems('AnnouncementsTable-prod');
+      await this.cache.set('announcements', announcements);
+    }
+
+    return new AnnouncementCollection(announcements).hasNewAnnouncements(
+      announcement,
+    );
   }
 }

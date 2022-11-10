@@ -31,13 +31,15 @@
     "@nestjs/typeorm": "^9.0.0",
     "@types/string-similarity": "^4.0.0",
     "aws-sdk": "^2.1060.0",
+    "cache-manager": "^4.1.0",
+    "dynamoose": "^3.1.0",
     "mysql2": "^2.3.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "string-similarity": "^4.0.4",
     "twitter-api-v2": "^1.9.0",
-    "typeorm": "^0.3.7"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",

@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AnnouncementService } from './announcement.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Announcement } from './entities/announcement.entity';
+import { DatabaseModule } from '../database/database.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Announcement])],
+  imports: [DatabaseModule],
   exports: [AnnouncementService],
   controllers: [],
   providers: [AnnouncementService],
